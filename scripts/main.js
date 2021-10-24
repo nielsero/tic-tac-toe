@@ -9,7 +9,7 @@ const player = function(name, mark) {
 };
 
 const gameboard = (function() {
-    const gameboardArray = [];
+    const gameboard = [];
 
     // cache dom
     const board = document.querySelector('.board');
@@ -36,7 +36,7 @@ const gameboard = (function() {
     }
 
     function _bindEvents() {
-        cells.forEach(function(cell, index) {
+        cells.forEach(function(cell) {
             cell.addEventListener('click', _handleCellClick);
         });
     }
@@ -51,7 +51,7 @@ const gameboard = (function() {
     }
 
     function _isCellEmpty(index) {
-        if(gameboardArray[index] === undefined) {
+        if(gameboard[index] === undefined) {
             return true;
         }
         return false;
@@ -59,28 +59,30 @@ const gameboard = (function() {
 
     function _render() {
         cells.forEach(function(cell, index) {
-            cell.textContent = gameboardArray[index];
+            cell.textContent = gameboard[index];
         });
     }
 
     function addMark(mark, index) {
-        gameboardArray[index] = mark;
-        _checkWin();
+        gameboard[index] = mark;
         _render();
+        _displayResult();
     }
 
     function _checkWin() {
         const rowsWin = _checkRowsWin();
         const columnsWin = _checkColumnsWin();
-        if(rowsWin || columnsWin) {
-            game.declareWinner();
+        const diagonalsWin = _checkDiagonalsWin();
+        if(rowsWin || columnsWin || diagonalsWin) {
+            return true;
         }
+        return false;
     }
 
     function _checkRowsWin() {
         for(let i=0; i<9; i+=3) {
             if(!_isCellEmpty(i)) {
-                if((gameboardArray[i] == gameboardArray[i+1]) && (gameboardArray[i] == gameboardArray[i+2])) {
+                if((gameboard[i] == gameboard[i+1]) && (gameboard[i] == gameboard[i+2])) {
                     return true;
                 }
             }
@@ -91,12 +93,44 @@ const gameboard = (function() {
     function _checkColumnsWin() {
         for(let i=0; i<3; i++) {
             if(!_isCellEmpty(i)) {
-                if((gameboardArray[i] == gameboardArray[i+3]) && (gameboardArray[i] == gameboardArray[i+6])) {
+                if((gameboard[i] == gameboard[i+3]) && (gameboard[i] == gameboard[i+6])) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    function _checkDiagonalsWin() {
+        if(!_isCellEmpty(0)) {
+            if((gameboard[0] == gameboard[4]) && (gameboard[0] == gameboard[8])) {
+                return true;
+            }
+        }
+        if(!_isCellEmpty(2)) {
+            if((gameboard[2] == gameboard[4]) && (gameboard[2] == gameboard[6])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function _isBoardFull() {
+        for(let i=0; i<9; i++) {
+            if(_isCellEmpty(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    function _displayResult() {
+        if(_checkWin()) {
+            game.declareWinner();
+        } else if(_isBoardFull()) {
+            game.declareDraw();
+        }
     }
 
     return {
@@ -113,6 +147,10 @@ const game = (function() {
     let currentPlayer = p1;
     let gameOver = false;
 
+    function start() {
+        // TODO
+    }
+
     function getCurrentPlayer() {
         return currentPlayer;
     }
@@ -126,14 +164,21 @@ const game = (function() {
         gameOver = true;
     }
 
+    function declareDraw() {
+        console.log("It's a draw");
+        gameOver = true;
+    }
+
     function isGameOver() {
         return gameOver;
     }
 
     return {
+        start,
         getCurrentPlayer, 
         changePlayer, 
         declareWinner,
+        declareDraw,
         isGameOver
     }
 })();
