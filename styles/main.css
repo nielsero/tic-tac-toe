@@ -1,0 +1,25 @@
+/* ====== resets ======= */
+body, h1 {
+    margin: 0;
+    padding: 0;
+}
+
+/* ======= layout ======= */
+.board {
+    display: flex;
+    flex-wrap: wrap;
+    width: 200px;
+    height: 200px;
+    justify-content: center;
+    align-items: center;
+}
+
+.cell {
+    width: 32%;
+    height: 32%;
+    background-color: pink;
+    border: 1px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
