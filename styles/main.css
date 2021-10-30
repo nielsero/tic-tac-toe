@@ -131,7 +131,7 @@ button {
 
 /* =================== LAYOUT ===================== */
 .container {
-    max-width: 968px;
+    /*max-width: 968px;*/
     margin-left: var(--m-1-5);
     margin-right: var(--m-1-5);
 }
@@ -201,6 +201,7 @@ button {
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: 2s;
 }
 
 .board {
@@ -210,15 +211,36 @@ button {
     width: 85vw;
     height: 85vw;
     max-width: var(--board-size);
-    max-height: var(--board-size)
+    max-height: var(--board-size);
+    border: 2px solid black;
+    background-color: white;
 }
 
 .cell {
-    background-color: white;
     border: 1px solid black;
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: transparent;
+}
+
+.cell:nth-child(-n+3) {
+    border-top: none;
+    border-left: none;
+    border-bottom: none;
+}
+
+.cell:nth-child(3n) {
+    border-right: none;
+}
+
+.cell:nth-child(n) {
+    border-left: none;
+}
+
+.cell:nth-last-child(-n+3) {
+    border-bottom: none;
+    border-top: none;
 }
 
 .restart-button {
@@ -235,10 +257,17 @@ button {
 }
 
 .invisible {
-    display: none;
+    opacity: 0;
+    position: absolute;
+    top: -150%;
 }
 
 .mark-selected {
     background-color: pink;
     transition: background-color .5s;
+}
+
+.board-disabled {
+    background-color: aqua;
+    cursor: not-allowed;
 }

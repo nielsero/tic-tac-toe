@@ -1,25 +1,27 @@
 const player = function(name, mark) {
-    const human = true;
-
-    const isHuman = function() {
-        return human;
-    }
-
     const play = function(index) {
         gameboard.addMark(mark, index);
-        game.changePlayer();
     }
-    return {name, mark, isHuman, play}
+    return {name, mark, play}
 };
 
 const gameboard = (function() {
     const gameboard = [];  
 
+    resetBoard();
+
     function isCellEmpty(index) {
-        if(gameboard[index] === undefined) {
+        if(gameboard[index] === '') {
             return true;
         }
         return false;
+    }
+
+    function resetBoard() {
+        // grid size is 9
+        for(let i=0; i<9; i++) {
+            gameboard[i] = '';
+        }
     }
 
     function addMark(mark, index) {
@@ -38,7 +40,7 @@ const gameboard = (function() {
 
     function _checkRowsWin() {
         for(let i=0; i<9; i+=3) {
-            if(!_isCellEmpty(i)) {
+            if(!isCellEmpty(i)) {
                 if((gameboard[i] == gameboard[i+1]) && (gameboard[i] == gameboard[i+2])) {
                     return true;
                 }
@@ -49,7 +51,7 @@ const gameboard = (function() {
 
     function _checkColumnsWin() {
         for(let i=0; i<3; i++) {
-            if(!_isCellEmpty(i)) {
+            if(!isCellEmpty(i)) {
                 if((gameboard[i] == gameboard[i+3]) && (gameboard[i] == gameboard[i+6])) {
                     return true;
                 }
@@ -59,12 +61,12 @@ const gameboard = (function() {
     }
 
     function _checkDiagonalsWin() {
-        if(!_isCellEmpty(0)) {
+        if(!isCellEmpty(0)) {
             if((gameboard[0] == gameboard[4]) && (gameboard[0] == gameboard[8])) {
                 return true;
             }
         }
-        if(!_isCellEmpty(2)) {
+        if(!isCellEmpty(2)) {
             if((gameboard[2] == gameboard[4]) && (gameboard[2] == gameboard[6])) {
                 return true;
             }
@@ -74,7 +76,7 @@ const gameboard = (function() {
 
     function isBoardFull() {
         for(let i=0; i<9; i++) {
-            if(_isCellEmpty(i)) {
+            if(isCellEmpty(i)) {
                 return false;
             }
         }
@@ -90,15 +92,16 @@ const gameboard = (function() {
         addMark,
         checkWin,
         isCellEmpty,
-        isBoardFull
+        isBoardFull,
+        resetBoard
     };
 
 })();
 
 const game = (function() {
     /* ============== DOM ELEMENTS ================= */
-    let display, vsPlayerForm, board, restartButton, cells, startButton, inputOutputContainer,
-    boardContainer, markButtons, vsPlayerFormData;
+    let display, board, restartButton, cells, startButton, inputControls,
+    boardContainer, markButtons, playerOneInput, playerTwoInput;
 
     /* ============== GAME ELEMENTS =============== */
     let displayText, playerOne, playerTwo, currentPlayer, gameOver, gameBoardState;
@@ -122,16 +125,16 @@ const game = (function() {
     /* ========== LOADING DOM ELEMENTS ============ */
     function _cacheDom() {
         display = document.querySelector('.display');
-        boardContainer = document.querySelector('board-container');
-        inputOutputContainer = document.querySelector('.input-output');
-        vsPlayerForm = document.querySelector('.vs-player-form');
-        vsPlayerFormData = new FormData(vsPlayerForm);
+        boardContainer = document.querySelector('.board-container');
+        inputControls = document.querySelector('.input-controls');
         board = document.querySelector('.board');
         _populateBoard(); // put cells in board
         cells = board.querySelectorAll('.cell');
         restartButton = document.querySelector('.restart-button');
         startButton = document.querySelector('.start-button');
         markButtons = document.querySelectorAll('.mark-button');
+        playerOneInput = document.querySelector('.name-player-one');
+        playerTwoInput = document.querySelector('.name-player-two');
     }
 
     function _populateBoard() {
@@ -161,8 +164,8 @@ const game = (function() {
 
     function _handleStartButtonClick(event) {
         event.preventDefault();
-        const playerOneName = vsPlayerFormData.get('player-one');
-        const playerTwoName = vsPlayerFormData.get('player-two');
+        const playerOneName = playerOneInput.value;
+        const playerTwoName = playerTwoInput.value;
         
         console.log(playerOneName);
         console.log(playerTwoName);
@@ -173,16 +176,21 @@ const game = (function() {
             playerOne = player(playerOneName, playerOneMark);
             playerTwo = player(playerTwoName, playerTwoMark);
             _startGame();
+            inputControls.classList.add('invisible');
+            boardContainer.classList.remove('invisible');
+            _render();
         }
     }
 
     function _startGame() {
         currentPlayer = playerOne;
         gameOver = false;
+        displayText = currentPlayer.name + " turn to play";
+        gameboard.resetBoard();
     }
 
     function _getPlayerOneMark() {
-        const xMarkSelected = markButtons[0].getAtrribute('data-selected');
+        const xMarkSelected = markButtons[0].getAttribute('data-selected');
         if(xMarkSelected == 'yes') {
             return 'x';
         } else { 
@@ -201,15 +209,38 @@ const game = (function() {
 
     function _handleCellClick(event) {
         const index = this.getAttribute('data-index');
-        if(!isGameOver()) {
+        if(!isGameOver() && gameboard.isCellEmpty(index)) {
             console.log(index);
             currentPlayer.play(index);
+            // checking result
+            if(gameboard.checkWin()) {
+                displayText = currentPlayer.name + " wins";
+                gameOver = true;
+                board.classList.add('board-disabled');
+                console.log(board);
+            } else if(gameboard.isBoardFull()) {
+                displayText = "It's a draw";
+                gameOver = true;
+                board.classList.add('board-disabled');
+                _changePlayer(); // change players if its a draw
+            } else {
+                _changePlayer();
+                _showTurnInDisplay();
+            }
         }
         _render();
     }
 
     function _handleRestartButtonClick(event) {
-        // TODO
+        _restartGame();
+        board.classList.remove('board-disabled');
+        _render();
+    }
+
+    function _restartGame() {
+        gameOver = false;
+        displayText = currentPlayer.name + " turn to play";
+        gameboard.resetBoard();
     }
 
     function _handleMarkButtonClick(event) {
@@ -242,8 +273,12 @@ const game = (function() {
         return currentPlayer;
     }
 
-    function changePlayer() {
-        currentPlayer = (currentPlayer === p1) ? p2 : p1;
+    function _changePlayer() {
+        currentPlayer = (currentPlayer === playerOne) ? playerTwo : playerOne;
+    }
+
+    function _showTurnInDisplay() {
+        displayText = currentPlayer.name + " turn to play";
     }
 
     function _render() {
@@ -308,88 +343,6 @@ const game = (function() {
         return oImg;
     }
 
-    function _renderInputControls() {
-
-    }
-
-    function _clearAllInputControls() {
-        const inputControlsList = inputControls.children;
-        inputControlsList.forEach(function(control) {
-            inputControls.removeChild(control);
-        });
-    }
-
-    function _renderInitialInputControls() {
-        const vsPlayerButton = document.createElement('button');
-        const vsComputerButton = document.createElement('button');
-        vsPlayerButton.textContent = 'vs Player';
-        vsComputerButton.textContent = 'vs Computer';
-
-        _bindInitialInputControlsButtonsEvents(vsPlayerButton, vsComputerButton);
-
-        inputControls.appendChild(vsPlayerButton);
-        inputControls.appendChild(vsComputerButton);
-    }
-
-    function _bindInitialInputControlsButtonsEvents(playerBtn, cpuBtn) {
-        playerBtn.addEventListener('click', _handleVsPlayerButtonClick);
-        cpuBtn.addEventListener('click', _handleVsComputerButtonClick)
-    }
-
-    function _renderVsPlayerInputControls() {
-        const playerOneInput = _createPlayerNameInput('Player 1 Name');
-        const playerTwoInput = _createPlayerNameInput('Player 2 Name');
-        const markContainerPlayerOne = _createMarkContainerForPlayer(1);
-        const markContainerPlayerTwo = _createMarkContainerForPlayer(2);
-
-        _clearAllInputControls();
-
-        inputControls.appendChild(playerOneInput);
-        inputControls.appendChild(markContainerPlayerOne);
-        inputControls.appendChild(playerTwoInput);
-        inputControls.appendChild(markContainerPlayerTwo);
-    }
-
-    function _createPlayerNameInput(placeholderText) {
-        const input = document.createElement('input');
-        input.classList.add('player-name-input');
-        input.setAttribute('placeholder', placeholderText);
-        return input;
-    }
-
-    function _createMarkContainerForPlayer(playerNumber) {
-        const markContainer = document.createElement('div');
-        const xMarkButton = document.createElement('button');
-        const oMarkButton = document.createElement('button');
-        xMarkButton.textContent = 'x';
-        oMarkButton.textContent = 'o';
-
-        // relating p1's x button with p2's o button and vice versa to create cool click effect
-        if(playerNumber === 1) {
-            xMarkButton.setAttribute('data-group', 1);
-            oMarkButton.setAttribute('data-group', 2);
-        } else {   
-            xMarkButton.setAttribute('data-group', 2);
-            oMarkButton.setAttribute('data-group', 1);
-        }
-
-        xMarkButton.addEventListener('click', _handleXButtonClick);
-        oMarkButton.addEventListener('click', _handleOButtonClick);
-
-        markContainer.appendChild(xMarkButton);
-        markContainer.appendChild(oMarkButton);
-
-        return markContainer;
-    }
-
-    function _handleXButtonClick(event) {
-
-    }
-
-    function _handleOButtonClick(event) {
-
-    }
-
     function _handleVsPlayerButtonClick(event) {
         // TODO
     }
@@ -401,7 +354,6 @@ const game = (function() {
     return { 
         init, 
         isGameOver,
-        changePlayer,
     };
 
 })();
