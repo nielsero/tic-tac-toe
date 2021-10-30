@@ -5,12 +5,62 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic Tac Toe</title>
+
+    <!--------------- BOXICONS ------------------>
+    <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+
+    <!------------------ CSS -------------------->
     <link rel='stylesheet' href='./styles/main.css'>
+
+    <!------------------ JS --------------------->
     <script src='./scripts/main.js' defer></script>
 </head>
 <body>
-    <div class='board'>
-    
-    </div>
+    <header class='header flex-center'>
+        tic tac toe
+    </header>
+    <main class='main'>
+        <div class='input-output container'>
+            <div class='display'>
+            </div>
+
+            <div class='input-controls'>
+                <form class='vs-player-form'>
+                    <div class='inputs-player-one player-input'>
+                        <input class='name-player-one name-input' type='text' placeholder="Player 1 Name" required>
+                        <div class='mark-buttons-container'>
+                            <button class='x-player-one mark-button'>
+                                <i class='bx bx-x-circle'></i>
+                            </button>
+                            <button class='o-player-one mark-button'>
+                                <i class='bx bxs-circle'></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class='inputs-player-two player-input'>
+                        <input class='name-player-two name-input' type='text' placeholder="Player 2 Name" required>
+                        <div class='mark-buttons-container'>
+                            <button class='x-player-two mark-button'>
+                                <i class='bx bx-x-circle'></i>
+                            </button>
+                            <button class='o-player-two mark-button'>
+                                <i class='bx bxs-circle'></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class='start-button' type='submit'>Start</button>
+                </form>
+            </div>
+        </div>
+
+        <div class='board-container container'>
+            <div class='board'>
+            </div>
+            <button class='restart-button'>Restart</button>
+        </div>
+    </main>
 </body>
 </html>
