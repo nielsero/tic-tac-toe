@@ -28,25 +28,25 @@
             <div class='input-controls'>
                 <form class='vs-player-form'>
                     <div class='inputs-player-one player-input'>
-                        <input class='name-player-one name-input' type='text' placeholder="Player 1 Name" required>
+                        <input class='name-player-one name-input' name='player-one' type='text' placeholder="Player 1 Name" required>
                         <div class='mark-buttons-container'>
-                            <button class='x-player-one mark-button'>
-                                <i class='bx bx-x-circle'></i>
+                            <button class='x-player-one mark-button mark-selected' data-group='one' data-selected='yes'>
+                                <img src='./images/tic-tac-toe-x.png' alt='x tic tac toe mark'>
                             </button>
-                            <button class='o-player-one mark-button'>
-                                <i class='bx bxs-circle'></i>
+                            <button class='o-player-one mark-button' data-selected='no' data-group='two'>
+                                <img src='./images/tic-tac-toe-o.png' alt='o tic tac toe mark'>
                             </button>
                         </div>
                     </div>
                     
                     <div class='inputs-player-two player-input'>
-                        <input class='name-player-two name-input' type='text' placeholder="Player 2 Name" required>
+                        <input class='name-player-two name-input' name='player-two' type='text' placeholder="Player 2 Name" required>
                         <div class='mark-buttons-container'>
-                            <button class='x-player-two mark-button'>
-                                <i class='bx bx-x-circle'></i>
+                            <button class='x-player-two mark-button' data-selected='no' data-group='two'>
+                                <img src='./images/tic-tac-toe-x.png' alt='x tic tac toe mark'>
                             </button>
-                            <button class='o-player-two mark-button'>
-                                <i class='bx bxs-circle'></i>
+                            <button class='o-player-two mark-button mark-selected' data-group='one' data-selected='yes'>
+                                <img src='./images/tic-tac-toe-o.png' alt='o tic tac toe mark'>
                             </button>
                         </div>
                     </div>

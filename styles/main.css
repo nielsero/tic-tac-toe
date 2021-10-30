@@ -14,6 +14,7 @@
 
     /* ======= FONTS & TYPOGRAPHY ======= */
     --main-font: 'Poppins', sans-serif;
+    --header-font-size: 2rem;
     --big-font-size: 2rem;
     --h1-font-size: 1.5rem;
     --h2-font-size: 1.25rem;
@@ -41,8 +42,7 @@
 
     /* ============ CUSTOM ============= */
     --btn-padding: 1.63rem;
-    --board-width: 215px;
-    --board-icon-size: 3rem;
+    --board-size: 400px;
 }
 
 /* =========== RESPONSIVE TYPOGRAPHY ============ */
@@ -58,6 +58,13 @@
         --smaller-font-size: .813rem;
     }
 }
+
+@media screen and (min-width: 310px) {
+    /* ==== MAKING MARKS RESPONSIVE ==== */
+    :root {
+        --board-icon-size: 5rem;
+    }
+}
  
 /* ================ NORMAL TAGS ================= */
 * {
@@ -68,6 +75,7 @@
 
 html {
     scroll-behavior: smooth;
+    font-size: 18px;
 }
 
 body {
@@ -92,7 +100,7 @@ a {
 }
 
 img {
-    max-width: 100%;
+    max-width: 90%;
     height: auto;
 }
 
@@ -118,7 +126,7 @@ button {
     z-index: var(--z-fixed);
     color: var(--header-color);
     font-weight: var(--font-semi-bold);
-    font-size: var(--h1-font-size);
+    font-size: var(--header-font-size);
 }
 
 /* =================== LAYOUT ===================== */
@@ -141,7 +149,7 @@ button {
     border: 1px solid black;
     background-color: pink;
     padding: var(--m-0-25) var(--m-0-5);
-    font-weight: var(--font-semi-bold);
+    font-weight: var(--font-medium);
     font-size: var(--h3-font-size);
 }
 
@@ -166,13 +174,20 @@ button {
     border: 1px solid black;
     padding: var(--m-0-5);
     margin-bottom: var(--m-0-5);
+    font-size: var(--h3-font-size);
 }
 
+.mark-buttons-container {
+    display: flex;
+    align-items: center;
+}
 
 .mark-button {
-    padding: var(--m-0-25) var(--m-0-75);
+    padding: var(--m-0-25);
     border: 1px solid black;
-    margin-right: var(--m-0-25);
+    margin-right: var(--m-0-5);
+    width: 3rem;
+    height: 3rem;
 }
 
 .start-button {
@@ -192,21 +207,18 @@ button {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
-    width: var(--board-width);
-    height: var(--board-width);
+    width: 85vw;
+    height: 85vw;
+    max-width: var(--board-size);
+    max-height: var(--board-size)
 }
 
 .cell {
-    background-color: gray;
+    background-color: white;
     border: 1px solid black;
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.cell-icon {
-    font-size: var(--board-icon-size);
-    color: white;
 }
 
 .restart-button {
@@ -224,4 +236,9 @@ button {
 
 .invisible {
     display: none;
+}
+
+.mark-selected {
+    background-color: pink;
+    transition: background-color .5s;
 }

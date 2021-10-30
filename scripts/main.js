@@ -6,16 +6,14 @@ const player = function(name, mark) {
     }
 
     const play = function(index) {
-        if(!game.isGameOver()) {
-            gameboard.addMark(mark, index);
-            game.changePlayer();
-        }
+        gameboard.addMark(mark, index);
+        game.changePlayer();
     }
     return {name, mark, isHuman, play}
 };
 
 const gameboard = (function() {
-    const gameboard = ['x','o','o','x','o','x'];  
+    const gameboard = [];  
 
     function isCellEmpty(index) {
         if(gameboard[index] === undefined) {
@@ -100,36 +98,40 @@ const gameboard = (function() {
 const game = (function() {
     /* ============== DOM ELEMENTS ================= */
     let display, vsPlayerForm, board, restartButton, cells, startButton, inputOutputContainer,
-    boardContainer;
+    boardContainer, markButtons, vsPlayerFormData;
 
     /* ============== GAME ELEMENTS =============== */
-    let displayText, currentPlayer, gameOver;
-    let gameBoardState = gameboard.getGameBoard();
+    let displayText, playerOne, playerTwo, currentPlayer, gameOver, gameBoardState;
 
-    _init();
+    init();
 
-    function _init() {
+    function init() {
         displayText = 'Enter player names to start';
-        gameOver = false;
+        gameOver = true;
+        gameBoardState = gameboard.getGameBoard();
+        currentPlayer = null;
         _cacheDom();
         _render();
-        //_bindInitialEvents();
+        _bindInitialEvents();
     }
 
     function isGameOver() {
         return gameOver;
     }
 
+    /* ========== LOADING DOM ELEMENTS ============ */
     function _cacheDom() {
         display = document.querySelector('.display');
         boardContainer = document.querySelector('board-container');
         inputOutputContainer = document.querySelector('.input-output');
         vsPlayerForm = document.querySelector('.vs-player-form');
+        vsPlayerFormData = new FormData(vsPlayerForm);
         board = document.querySelector('.board');
         _populateBoard(); // put cells in board
         cells = board.querySelectorAll('.cell');
         restartButton = document.querySelector('.restart-button');
         startButton = document.querySelector('.start-button');
+        markButtons = document.querySelectorAll('.mark-button');
     }
 
     function _populateBoard() {
@@ -152,23 +154,96 @@ const game = (function() {
         });
         startButton.addEventListener('click', _handleStartButtonClick);
         restartButton.addEventListener('click', _handleRestartButtonClick);
+        markButtons.forEach(function(markButton) {
+            markButton.addEventListener('click', _handleMarkButtonClick);
+        });
     }
 
     function _handleStartButtonClick(event) {
-        // TODO
-    }
+        event.preventDefault();
+        const playerOneName = vsPlayerFormData.get('player-one');
+        const playerTwoName = vsPlayerFormData.get('player-two');
+        
+        console.log(playerOneName);
+        console.log(playerTwoName);
 
-    function _handleCellClick(event) {
-        const targetCell = event.target;
-        const index = targetCell.getAttribute('data-index');
-        if(_isCellEmpty(index)) {
-            const currPlayer = game.getCurrentPlayer();
-            currPlayer.play(index);
+        if(playerOneName != '' && playerTwoName != '') {
+            const playerOneMark = _getPlayerOneMark();
+            const playerTwoMark = _getPlayerTwoMark();
+            playerOne = player(playerOneName, playerOneMark);
+            playerTwo = player(playerTwoName, playerTwoMark);
+            _startGame();
         }
     }
 
+    function _startGame() {
+        currentPlayer = playerOne;
+        gameOver = false;
+    }
+
+    function _getPlayerOneMark() {
+        const xMarkSelected = markButtons[0].getAtrribute('data-selected');
+        if(xMarkSelected == 'yes') {
+            return 'x';
+        } else { 
+            return 'o';
+        }
+    }
+
+    function _getPlayerTwoMark() {
+        const playerOneMark = _getPlayerOneMark();
+        if(playerOneMark == 'x') {
+            return 'o';
+        } else {
+            return 'x';
+        }
+    }
+
+    function _handleCellClick(event) {
+        const index = this.getAttribute('data-index');
+        if(!isGameOver()) {
+            console.log(index);
+            currentPlayer.play(index);
+        }
+        _render();
+    }
+
     function _handleRestartButtonClick(event) {
-        
+        // TODO
+    }
+
+    function _handleMarkButtonClick(event) {
+        event.preventDefault();
+        const dataGroup = this.getAttribute('data-group');
+
+        markButtons.forEach(function(button) {
+            const group = button.getAttribute('data-group');
+            if(group == dataGroup) {
+                button.setAttribute('data-selected', 'yes');
+            } else {
+                button.setAttribute('data-selected', 'no');
+            }
+        });
+
+        _styleSelectedMarkButtons();
+    }
+
+    function _styleSelectedMarkButtons() {
+        markButtons.forEach(function(button) {
+            button.classList.remove('mark-selected');
+            const selected = button.getAttribute('data-selected');
+            if(selected == 'yes') {
+                button.classList.add('mark-selected');
+            }
+        });
+    }
+
+    function getCurrentPlayer() {
+        return currentPlayer;
+    }
+
+    function changePlayer() {
+        currentPlayer = (currentPlayer === p1) ? p2 : p1;
     }
 
     function _render() {
@@ -188,16 +263,21 @@ const game = (function() {
             }
 
             if(gameBoardState[index] == 'x') {
-                const xIcon = _createXIcon();
-                cell.appendChild(xIcon);
+                //const xIcon = _createXIcon();
+                // cell.appendChild(xIcon);
+                const xImg = _createXImg();
+                cell.appendChild(xImg);
             }
             if(gameBoardState[index] == 'o') {
-                const oIcon = _createOIcon();
-                cell.appendChild(oIcon);
+                //const oIcon = _createOIcon();
+                //cell.appendChild(oIcon);
+                const oImg = _createOImg();
+                cell.appendChild(oImg);
             }
         });
     }
 
+    /* NO MORE ICONS
     function _createXIcon() {
         const xIcon = document.createElement('i');
         xIcon.classList.add('bx');
@@ -212,6 +292,20 @@ const game = (function() {
         oIcon.classList.add('bxs-circle');
         oIcon.classList.add('cell-icon');
         return oIcon;
+    } */
+
+    function _createXImg() {
+        const xImg = document.createElement('img');
+        xImg.setAttribute('src', './images/tic-tac-toe-x.png');
+        xImg.classList.add('mark-image');
+        return xImg;
+    }
+
+    function _createOImg() {
+        const oImg = document.createElement('img');
+        oImg.setAttribute('src', './images/tic-tac-toe-o.png');
+        oImg.classList.add('mark-image');
+        return oImg;
     }
 
     function _renderInputControls() {
@@ -303,6 +397,12 @@ const game = (function() {
     function _handleVsComputerButtonClick(event) {
         // TODO
     }
+
+    return { 
+        init, 
+        isGameOver,
+        changePlayer,
+    };
 
 })();
 
