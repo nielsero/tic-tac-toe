@@ -25,7 +25,16 @@
             <div class='display'>
             </div>
 
-            <div class='input-controls'>
+            <div class='choose-opponent'>
+                <button class='pvp-button choose-button'>
+                    <img src='./images/pvp.png' alt='player vs player'>
+                </button>
+                <button class='pve-button choose-button'>
+                    <img src='./images/pve.png' alt='player vs computer'>
+                </button>
+            </div>
+
+            <div class='input-controls invisible'>
                 <form class='vs-player-form'>
                     <div class='inputs-player-one player-input'>
                         <input class='name-player-one name-input' name='player-one' type='text' placeholder="Player 1 Name" required>
@@ -54,13 +63,14 @@
                     <button class='start-button' type='submit'>Start</button>
                 </form>
             </div>
+
+            <div class='board-container invisible'>
+                <div class='board'>
+                </div>
+                <button class='restart-button'>Restart</button>
+            </div>
         </div>
 
-        <div class='board-container container invisible'>
-            <div class='board'>
-            </div>
-            <button class='restart-button'>Restart</button>
-        </div>
     </main>
 </body>
 </html>

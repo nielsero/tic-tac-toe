@@ -1,8 +1,26 @@
-const player = function(name, mark) {
+const player = function(name, mark, isHuman) {
+
     const play = function(index) {
-        gameboard.addMark(mark, index);
+
+        if(isHuman) {
+            gameboard.addMark(mark, index);
+        } else {
+            _computerPlay();
+
+        }
     }
-    return {name, mark, play}
+
+    const _computerPlay = function() {
+        let randomIndex = Math.floor(Math.random() * 10);
+        while(!gameboard.isCellEmpty(randomIndex)) {
+            randomIndex = Math.floor(Math.random() * 10);
+        }
+        console.log(randomIndex);
+        console.log('Randoming');
+        gameboard.addMark(mark, randomIndex);
+    }
+
+    return {name, mark, isHuman, play}
 };
 
 const gameboard = (function() {
@@ -101,15 +119,18 @@ const gameboard = (function() {
 const game = (function() {
     /* ============== DOM ELEMENTS ================= */
     let display, board, restartButton, cells, startButton, inputControls,
-    boardContainer, markButtons, playerOneInput, playerTwoInput;
+    boardContainer, markButtons, playerOneInput, playerTwoInput, chooseOpponentDiv,
+    pvpButton, pveButton;
 
     /* ============== GAME ELEMENTS =============== */
-    let displayText, playerOne, playerTwo, currentPlayer, gameOver, gameBoardState;
+    let displayText, playerOne, playerTwo, currentPlayer, gameOver, gameBoardState,
+    vsComputer;
 
     init();
 
     function init() {
-        displayText = 'Enter player names to start';
+        displayText = 'PVP or PVE';
+        vsComputer = false;
         gameOver = true;
         gameBoardState = gameboard.getGameBoard();
         currentPlayer = null;
@@ -135,6 +156,9 @@ const game = (function() {
         markButtons = document.querySelectorAll('.mark-button');
         playerOneInput = document.querySelector('.name-player-one');
         playerTwoInput = document.querySelector('.name-player-two');
+        chooseOpponentDiv = document.querySelector('.choose-opponent');
+        pvpButton = document.querySelector('.pvp-button');
+        pveButton = document.querySelector('.pve-button');
     }
 
     function _populateBoard() {
@@ -160,6 +184,24 @@ const game = (function() {
         markButtons.forEach(function(markButton) {
             markButton.addEventListener('click', _handleMarkButtonClick);
         });
+        pvpButton.addEventListener('click', _handlePvpButtonClick);
+        pveButton.addEventListener('click', _handlePveButtonClick);
+    }
+
+    function _handlePvpButtonClick(event)  {
+        chooseOpponentDiv.classList.add('invisible');
+        inputControls.classList.remove('invisible');
+        displayText = 'Enter player names to start';
+        _render();
+    }
+
+    function _handlePveButtonClick(event) {
+        chooseOpponentDiv.classList.add('invisible');
+        inputControls.classList.remove('invisible');
+        displayText = 'Enter player names to start';
+        vsComputer = true;
+        playerTwoInput.value = 'Computer';
+        _render();
     }
 
     function _handleStartButtonClick(event) {
@@ -173,8 +215,14 @@ const game = (function() {
         if(playerOneName != '' && playerTwoName != '') {
             const playerOneMark = _getPlayerOneMark();
             const playerTwoMark = _getPlayerTwoMark();
-            playerOne = player(playerOneName, playerOneMark);
-            playerTwo = player(playerTwoName, playerTwoMark);
+            playerOne = player(playerOneName, playerOneMark, true);
+            
+            if(vsComputer) {
+                playerTwo = player(playerTwoName, playerTwoMark, false);
+                console.log("I'm playing vs computer");
+            } else {
+                playerTwo = player(playerTwoName, playerTwoMark, true);
+            }
             _startGame();
             inputControls.classList.add('invisible');
             boardContainer.classList.remove('invisible');
@@ -212,23 +260,42 @@ const game = (function() {
         if(!isGameOver() && gameboard.isCellEmpty(index)) {
             console.log(index);
             currentPlayer.play(index);
-            // checking result
-            if(gameboard.checkWin()) {
-                displayText = currentPlayer.name + " wins";
-                gameOver = true;
-                board.classList.add('board-disabled');
-                console.log(board);
-            } else if(gameboard.isBoardFull()) {
-                displayText = "It's a draw";
-                gameOver = true;
-                board.classList.add('board-disabled');
-                _changePlayer(); // change players if its a draw
-            } else {
-                _changePlayer();
-                _showTurnInDisplay();
-            }
+
+            _checkingResult();
         }
+
+        if(!currentPlayer.isHuman && !gameOver) {
+            currentPlayer.play(0);
+            // checking result
+            _checkingResult();
+        }
+
         _render();
+    }
+
+    function _checkingResult() {
+        // checking result
+        if(gameboard.checkWin()) {
+            displayText = currentPlayer.name + " wins";
+            gameOver = true;
+            board.classList.add('board-disabled');
+            console.log(board);
+            if(!currentPlayer.isHuman) { // change player if computer wins
+                _changePlayer();
+            }
+
+        } else if(gameboard.isBoardFull()) {
+            displayText = "It's a draw";
+            gameOver = true;
+            board.classList.add('board-disabled');
+            _changePlayer();
+            if(!currentPlayer.isHuman) {
+                _changePlayer(); // change players if its a computer
+            }
+        } else {
+            _changePlayer();
+            _showTurnInDisplay();
+        }
     }
 
     function _handleRestartButtonClick(event) {
@@ -312,23 +379,6 @@ const game = (function() {
         });
     }
 
-    /* NO MORE ICONS
-    function _createXIcon() {
-        const xIcon = document.createElement('i');
-        xIcon.classList.add('bx');
-        xIcon.classList.add('bxs-x-square');
-        xIcon.classList.add('cell-icon');
-        return xIcon;
-    }
-
-    function _createOIcon() {
-        const oIcon = document.createElement('i');
-        oIcon.classList.add('bx');
-        oIcon.classList.add('bxs-circle');
-        oIcon.classList.add('cell-icon');
-        return oIcon;
-    } */
-
     function _createXImg() {
         const xImg = document.createElement('img');
         xImg.setAttribute('src', './images/tic-tac-toe-x.png');
@@ -343,202 +393,9 @@ const game = (function() {
         return oImg;
     }
 
-    function _handleVsPlayerButtonClick(event) {
-        // TODO
-    }
-
-    function _handleVsComputerButtonClick(event) {
-        // TODO
-    }
-
     return { 
         init, 
         isGameOver,
     };
 
 })();
-
-/*const player = function(name, mark) {
-    const play = function(index) {
-        if(!game.isGameOver()) {
-            gameboard.addMark(mark, index);
-            game.changePlayer();
-        }
-    }
-    return {name, mark, play}
-};
-
-const gameboard = (function() {
-    const gameboard = [];
-
-    // cache dom
-    const board = document.querySelector('.board');
-    _populateBoard();
-    const cells = board.querySelectorAll('.cell');
-
-    // bind events
-    _bindEvents();
-
-    _render();
-
-    function _populateBoard() {
-        for(let i=0; i<9; i++) {
-            const cell = _createBoardCell();
-            cell.setAttribute('data-index', i);
-            board.appendChild(cell);
-        }
-    }
-
-    function _createBoardCell() {
-        const cell = document.createElement('div');
-        cell.classList.add('cell');
-        return cell;
-    }
-
-    function _bindEvents() {
-        cells.forEach(function(cell) {
-            cell.addEventListener('click', _handleCellClick);
-        });
-    }
-
-    function _handleCellClick(event) {
-        const targetCell = event.target;
-        const index = targetCell.getAttribute('data-index');
-        if(_isCellEmpty(index)) {
-            const currPlayer = game.getCurrentPlayer();
-            currPlayer.play(index);
-        }
-    }
-
-    function _isCellEmpty(index) {
-        if(gameboard[index] === undefined) {
-            return true;
-        }
-        return false;
-    }
-
-    function _render() {
-        cells.forEach(function(cell, index) {
-            cell.textContent = gameboard[index];
-        });
-    }
-
-    function addMark(mark, index) {
-        gameboard[index] = mark;
-        _render();
-        _displayResult();
-    }
-
-    function _checkWin() {
-        const rowsWin = _checkRowsWin();
-        const columnsWin = _checkColumnsWin();
-        const diagonalsWin = _checkDiagonalsWin();
-        if(rowsWin || columnsWin || diagonalsWin) {
-            return true;
-        }
-        return false;
-    }
-
-    function _checkRowsWin() {
-        for(let i=0; i<9; i+=3) {
-            if(!_isCellEmpty(i)) {
-                if((gameboard[i] == gameboard[i+1]) && (gameboard[i] == gameboard[i+2])) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    function _checkColumnsWin() {
-        for(let i=0; i<3; i++) {
-            if(!_isCellEmpty(i)) {
-                if((gameboard[i] == gameboard[i+3]) && (gameboard[i] == gameboard[i+6])) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    function _checkDiagonalsWin() {
-        if(!_isCellEmpty(0)) {
-            if((gameboard[0] == gameboard[4]) && (gameboard[0] == gameboard[8])) {
-                return true;
-            }
-        }
-        if(!_isCellEmpty(2)) {
-            if((gameboard[2] == gameboard[4]) && (gameboard[2] == gameboard[6])) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    function _isBoardFull() {
-        for(let i=0; i<9; i++) {
-            if(_isCellEmpty(i)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    function _displayResult() {
-        if(_checkWin()) {
-            game.declareWinner();
-        } else if(_isBoardFull()) {
-            game.declareDraw();
-        }
-    }
-
-    return {
-        addMark,
-    }
-
-})();
-
-// controller
-const game = (function() {
-    const p1 = player('Niels', 'X');
-    const p2 = player('Enemy', 'O');
-
-    let currentPlayer = p1;
-    let gameOver = false;
-
-    function start() {
-        // TODO
-    }
-
-    function getCurrentPlayer() {
-        return currentPlayer;
-    }
-
-    function changePlayer() {
-        currentPlayer = (currentPlayer === p1) ? p2 : p1;
-    }
-
-    function declareWinner() {
-        console.log(currentPlayer.mark + " wins");
-        gameOver = true;
-    }
-
-    function declareDraw() {
-        console.log("It's a draw");
-        gameOver = true;
-    }
-
-    function isGameOver() {
-        return gameOver;
-    }
-
-    return {
-        start,
-        getCurrentPlayer, 
-        changePlayer, 
-        declareWinner,
-        declareDraw,
-        isGameOver
-    }
-})();*/
